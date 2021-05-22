@@ -1,37 +1,48 @@
-version: '3.4'
+version: '3.8'
 
 services:
   catalogdb:
-    container_name: catalogdb
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+    image: mongo
+
 
   basketdb:
-    container_name: basketdb
-    restart: always
-    ports:
-      - "6379:6379"
+    image: redis:alpine
 
 
+  discountdb:
+    image: postgres
+      
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    
+    
+  portainer:
+    image: portainer/portainer-ce
+    
+    
   catalog.api:
-    container_name: catalog.api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - "DatabaseSettings:ConnectionString=mongodb://catalogdb:27017"
-    depends_on:
-      - catalogdb
-    ports:
-      - "8000:80"
+    image: ${DOCKER_REGISTRY-}catalogapi
+    build:
+      context: .
+      dockerfile: Services/Catalog/Catalog.API/Dockerfile
+
 
   basket.api:
-    container_name: basket.api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - "CacheSettings:ConnectionString=basketdb:6379"
-    depends_on:
-      - basketdb
-    ports:
-      - "8001:80"
+    image: ${DOCKER_REGISTRY-}basketapi
+    build:
+      context: .
+      dockerfile: Services/Basket/Basket.API/Dockerfile
+
+
+  discount.api:
+    image: ${DOCKER_REGISTRY-}discountapi
+    build:
+      context: .
+      dockerfile: Services/Discount/Discount.API/Dockerfile
+
+volumes:
+  mongo_data:
+  portainer_data:
+  postgres_data:
+  pgadmin_data:
