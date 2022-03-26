@@ -1,65 +1,62 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using System.Data;
 using Npgsql;
+using Serilog;
 
-namespace Discount.Grpc.Extentions
+namespace Discount.Grpc.Extentions;
+
+public static class HostExtensions
 {
-    public static class HostExtensions
+    public static async Task MigrateDatabase<TContext>(this WebApplication host, int? retry = 0)
     {
-        public static IHost MigrateDatabase<TContext>(this IHost host, int? retry = 0)
+        if (retry == null) return;
+        var retryForAvailability = retry.Value;
+
+        using var scope = host.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        var configuration = services.GetRequiredService<IConfiguration>();
+
+        try
         {
-            if (retry == null) return host;
-            var retryForAvailability = retry.Value;
+            Log.Information("Migrating postgresql database");
 
-            using var scope = host.Services.CreateScope();
-            var services = scope.ServiceProvider;
-            var configuration = services.GetRequiredService<IConfiguration>();
-            var logger = services.GetRequiredService<ILogger<TContext>>();
-
-            try
+            await using var connection = new NpgsqlConnection
+                (configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
+            if (connection.State == ConnectionState.Closed)
             {
-                logger.LogInformation("Migrating postgresql database");
+                await connection.OpenAsync();
+            }
 
-                using var connection = new NpgsqlConnection
-                    (configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
-                connection.Open();
+            await using var command = new NpgsqlCommand
+            {
+                Connection = connection, CommandText = "DROP TABLE IF EXISTS Coupon"
+            };
 
-                using var command = new NpgsqlCommand
-                {
-                    Connection = connection, CommandText = "DROP TABLE IF EXISTS Coupon"
-                };
+            command.ExecuteNonQuery();
 
-                command.ExecuteNonQuery();
-
-                command.CommandText = @"CREATE TABLE Coupon(Id SERIAL PRIMARY KEY, 
+            command.CommandText = @"CREATE TABLE Coupon(Id SERIAL PRIMARY KEY, 
                                                             ProductName VARCHAR(24) NOT NULL,
                                                             Description TEXT,
                                                             Amount INT)";
-                command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
 
-                command.CommandText = "INSERT INTO Coupon(ProductName, Description, Amount) VALUES('IPhone X', 'IPhone Discount', 150);";
-                command.ExecuteNonQuery();
+            command.CommandText = "INSERT INTO Coupon(ProductName, Description, Amount) VALUES('IPhone X', 'IPhone Discount', 150);";
+            await command.ExecuteNonQueryAsync();
 
-                command.CommandText = "INSERT INTO Coupon(ProductName, Description, Amount) VALUES('Samsung 10', 'Samsung Discount', 100);";
-                command.ExecuteNonQuery();
+            command.CommandText = "INSERT INTO Coupon(ProductName, Description, Amount) VALUES('Samsung 10', 'Samsung Discount', 100);";
+            await command.ExecuteNonQueryAsync();
 
-                logger.LogInformation("Migrated postgresql database");
-            }
-            catch (NpgsqlException ex)
+            Log.Information("Migrated postgresql database");
+        }
+        catch (NpgsqlException ex)
+        {
+            Log.Fatal(ex, "An error occurred while migrating the postgresql database");
+
+            if (retryForAvailability < 50)
             {
-                logger.LogError(ex, "An error occurred while migrating the postgresql database");
-
-                if (retryForAvailability < 50)
-                {
-                    retryForAvailability++;
-                    System.Threading.Thread.Sleep(2000);
-                    MigrateDatabase<TContext>(host, retryForAvailability);
-                }
+                retryForAvailability++;
+                System.Threading.Thread.Sleep(2000);
+                await MigrateDatabase<TContext>(host, retryForAvailability);
             }
-
-            return host;
         }
     }
 }

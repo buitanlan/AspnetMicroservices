@@ -1,27 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Discount.Grpc.Extentions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Discount.Grpc.Repositories;
+using Discount.Grpc.Services;
 
-namespace Discount.Grpc
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddGrpc();
+builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
+
+var app = builder.Build();
+
+await app.MigrateDatabase<Program>();
+if (app.Environment.IsDevelopment())
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            var host = CreateHostBuilder(args).Build();
-            host.MigrateDatabase<Program>();
-            await host.RunAsync();
-        }
-
-        // Additional configuration is required to successfully run gRPC on macOS.
-        // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
-    }
+    app.UseDeveloperExceptionPage();
 }
+
+app.UseRouting();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGrpcService<DiscountService>();
+
+    endpoints.MapGet("/",
+        async context =>
+        {
+            await context.Response.WriteAsync(
+                "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        });
+});

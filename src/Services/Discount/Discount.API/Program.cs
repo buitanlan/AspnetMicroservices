@@ -1,22 +1,37 @@
-using System.Threading.Tasks;
 using Discount.API.Extentions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Discount.API.Repositories;
+using Microsoft.OpenApi.Models;
+using Serilog;
 
-namespace Discount.API
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(c =>
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            var host = CreateHostBuilder(args).Build();
-            host.MigrateDatabase<Program>();
-            await host.RunAsync();
-        }
+    c.SwaggerDoc("v1", new OpenApiInfo {Title = "Discount.API", Version = "v1"});
+});
+builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
+builder.Host.UseSerilog((_, lc) => lc.WriteTo.Console());
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => 
-                    webBuilder.UseStartup<Startup>());
-    }
+
+
+
+var app = builder.Build();
+await app.MigrateDatabase<Program>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Discount.API v1"));
 }
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

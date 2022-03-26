@@ -2,13 +2,12 @@
 using Discount.Grpc.Entities;
 using Discount.Grpc.Protos;
 
-namespace Discount.Grpc.Mappers
+namespace Discount.Grpc.Mappers;
+
+public class DiscountProfile: Profile
 {
-    public class DiscountProfile: Profile
+    public DiscountProfile()
     {
-        public DiscountProfile()
-        {
-            CreateMap<Coupon, CouponModel>().ReverseMap();
-        }
+        CreateMap<Coupon, CouponModel>().ReverseMap();
     }
 }
