@@ -13,16 +13,5 @@ public class ShoppingCart
         UserName = userName;
     }
 
-    public decimal TotalPrice
-    {
-        get
-        {
-            decimal totalPrice = 0;
-            foreach( var item in Items)
-            {
-                totalPrice += item.Price * item.Quantity;
-            }
-            return totalPrice;
-        }
-    }
+    public decimal TotalPrice => Items.Sum(item => item.Price * item.Quantity);
 }

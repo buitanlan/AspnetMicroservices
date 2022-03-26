@@ -11,11 +11,13 @@ namespace Basket.API.Controllers;
 public class BasketController : ControllerBase
 {
     private readonly IBasketRepository _repository;
-    private readonly DiscountGrpcService _discountGrpcService;
+    private readonly IDiscountGrpcService _discountGrpcService;
 
-    public BasketController(IBasketRepository repository)
+    public BasketController(IBasketRepository repository, IDiscountGrpcService discountGrpcService)
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _repository = repository;
+        _discountGrpcService = discountGrpcService;
+
     }
 
     [HttpGet("{userName}", Name = "GetBasket")]
@@ -24,14 +26,14 @@ public class BasketController : ControllerBase
     {
 
         var basket = await _repository.GetBasket(userName);
-        return Ok(basket ?? new ShoppingCart(userName));
+        return Ok(basket);
     }
 
     [HttpPost]
     [ProducesResponseType(typeof(ShoppingCart), (int)HttpStatusCode.OK)]
     public async Task<ActionResult<ShoppingCart>> UpdateBasket([FromBody] ShoppingCart basket)
     {
-        //TODO: commumtication with Dhiscount.Grpc
+        //TODO: communication with Discount.Grpc
         foreach (var item in basket.Items)
         {
             var coupon = await _discountGrpcService.GetDiscount(item.ProductName);

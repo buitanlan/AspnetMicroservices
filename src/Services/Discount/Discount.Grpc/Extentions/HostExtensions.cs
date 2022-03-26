@@ -8,7 +8,7 @@ public static class HostExtensions
 {
     public static async Task MigrateDatabase<TContext>(this WebApplication host, int? retry = 0)
     {
-        if (retry == null) return;
+        if (retry is null) return;
         var retryForAvailability = retry.Value;
 
         using var scope = host.Services.CreateScope();

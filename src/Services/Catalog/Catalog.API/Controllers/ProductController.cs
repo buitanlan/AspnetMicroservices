@@ -32,7 +32,7 @@ public class CatalogController : ControllerBase
     public async Task<ActionResult<Product>> GetProductById(string id)
     {
         var product = await _repository.GetProduct(id);
-        if (product == null)
+        if (product is null)
         {
             _logger.LogError($"Product with id: {id}, not found.");
             return NotFound();

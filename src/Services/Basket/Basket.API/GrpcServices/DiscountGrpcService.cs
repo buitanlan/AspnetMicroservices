@@ -1,14 +1,15 @@
 ﻿using Discount.Grpc.Protos;
-using static Discount.Grpc.Protos.DiscountProtoService;
+using Grpc.Net.Client;
 
 namespace Basket.API.GrpcServices;
 
-public class DiscountGrpcService
+public class DiscountGrpcService: IDiscountGrpcService
 {
-    private readonly DiscountProtoServiceClient _discountProtoService;
-    public DiscountGrpcService(DiscountProtoServiceClient discountProtoService)
+    private readonly DiscountProtoService.DiscountProtoServiceClient _client;
+    public DiscountGrpcService(IConfiguration configuration)
     {
-        _discountProtoService = discountProtoService;
+        var channel = GrpcChannel.ForAddress(configuration["GrpcSettings:DiscountUrl"]);
+        _client = new DiscountProtoService.DiscountProtoServiceClient(channel);
     }
 
     public async Task<CouponModel> GetDiscount(string productName)
@@ -18,6 +19,6 @@ public class DiscountGrpcService
             ProductName = productName
         };
 
-        return await _discountProtoService.GetDiscountAsync(discountRequest);
+        return await _client.GetDiscountAsync(discountRequest);
     }
 }

@@ -16,10 +16,7 @@ public class BasketRepository: IBasketRepository
     {
         var basket = await _redisCache.GetStringAsync(userName);
 
-        if (String.IsNullOrEmpty(basket))
-            return null;
-
-        return JsonSerializer.Deserialize<ShoppingCart>(basket);
+        return (string.IsNullOrEmpty(basket) ? null : JsonSerializer.Deserialize<ShoppingCart>(basket)) ?? throw new InvalidOperationException();
     }
 
     public async Task<ShoppingCart> UpdateBasket(ShoppingCart basket)

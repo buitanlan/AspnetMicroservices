@@ -10,7 +10,7 @@ public class ProductRepository: IProductRepository
 
     public ProductRepository(ICatalogContext context)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _context = context;
     }
 
     public async Task<IEnumerable<Product>> GetProducts()
