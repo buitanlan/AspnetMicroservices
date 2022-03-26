@@ -2,6 +2,7 @@
 using Catalog.API.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using Serilog;
 
 namespace Catalog.API.Controllers;
 
@@ -10,12 +11,10 @@ namespace Catalog.API.Controllers;
 public class CatalogController : ControllerBase
 {
     private readonly IProductRepository _repository;
-    private readonly ILogger<CatalogController> _logger;
 
-    public CatalogController(IProductRepository repository, ILogger<CatalogController> logger)
+    public CatalogController(IProductRepository repository)
     {
         _repository = repository;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -34,7 +33,7 @@ public class CatalogController : ControllerBase
         var product = await _repository.GetProduct(id);
         if (product is null)
         {
-            _logger.LogError($"Product with id: {id}, not found.");
+            Log.Fatal($"Product with id: {id}, not found.");
             return NotFound();
         }
         return Ok(product);
