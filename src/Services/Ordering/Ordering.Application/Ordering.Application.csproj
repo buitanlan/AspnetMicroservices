@@ -10,4 +10,14 @@
       <ProjectReference Include="..\Ordering.Domain\Ordering.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Behaviors" />
+      <Folder Include="Features\Orders\Commands" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="11.0.1" />
+      <PackageReference Include="MediatR" Version="10.0.1" />
+    </ItemGroup>
+
 </Project>
