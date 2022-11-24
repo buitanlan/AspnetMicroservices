@@ -1,8 +1,8 @@
 ﻿namespace Basket.API.Entities;
 
-public class ShoppingCart
+public class     ShoppingCart
 {
-    public string UserName { get; set; }
+    public string UserName { get; set; } = default!; 
     public List<ShoppingCartItem> Items { get; set; } = new();
     public ShoppingCart()
     {
