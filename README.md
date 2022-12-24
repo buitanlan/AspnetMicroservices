@@ -1,3 +1,3 @@
 # AspnetMicroservices
-run project
-docker-compose -f ./docker-compose.yml -f ./docker-compose.override.yml up -d
+run project: <br>
+`docker-compose -f ./docker-compose.yml -f ./docker-compose.override.yml up -d`

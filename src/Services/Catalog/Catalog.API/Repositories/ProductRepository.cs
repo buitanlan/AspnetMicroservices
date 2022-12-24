@@ -57,7 +57,7 @@ public class ProductRepository: IProductRepository
     {
         var updateResult = await _context
             .Products
-            .ReplaceOneAsync(filter: g => g.Id == product.Id, replacement: product);
+            .ReplaceOneAsync(g => g.Id == product.Id, product);
 
         return updateResult.IsAcknowledged
                && updateResult.ModifiedCount > 0;

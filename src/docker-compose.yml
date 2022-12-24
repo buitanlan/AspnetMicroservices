@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   catalogdb:
@@ -19,6 +19,13 @@ services:
     
   portainer:
     image: portainer/portainer-ce
+    
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.1
     
     
   catalog.api:
@@ -52,4 +59,6 @@ volumes:
   portainer_data:
   postgres_data:
   pgadmin_data:
+  elasticsearch-data:
+
 

@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   catalogdb:
@@ -95,4 +95,35 @@ services:
       - discountdb
     ports:
       - "8003:80"
+
+  elasticsearch:
+    container_name: elasticsearch
+    environment:
+      ES_JAVA_OPTS: "-Xmx4g -Xms4g"
+      bootstrap.memory_lock: "true"
+      discovery.type: "single-node"
+      http.host: "0.0.0.0"
+      action.auto_create_index: ".watches,.triggered_watches,.watcher-history-*"
+      network.host: "0.0.0.0"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        hard: -1
+        soft: -1
+  
+  kibana:
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"  
+
 
