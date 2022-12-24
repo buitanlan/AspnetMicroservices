@@ -1,4 +1,4 @@
-using Discount.API.Extentions;
+using Discount.API.Extensions;
 using Discount.API.Repositories;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -17,7 +17,7 @@ builder.Host.UseSerilog((_, lc) => lc.WriteTo.Console());
 
 
 var app = builder.Build();
-await app.MigrateDatabase<Program>();
+await app.MigrateDatabase();
 
 if (app.Environment.IsDevelopment())
 {

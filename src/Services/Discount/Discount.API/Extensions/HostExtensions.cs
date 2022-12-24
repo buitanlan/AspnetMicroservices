@@ -2,11 +2,11 @@
 using Npgsql;
 using Serilog;
 
-namespace Discount.API.Extentions;
+namespace Discount.API.Extensions;
 
 public static class HostExtensions
 {
-    public static async Task MigrateDatabase<TContext>(this WebApplication host, int? retry = 0)
+    public static async Task MigrateDatabase(this WebApplication host, int? retry = 0)
     {
         if (retry is null) return;
         var retryForAvailability = retry.Value;
@@ -55,7 +55,7 @@ public static class HostExtensions
             {
                 retryForAvailability++;
                 Thread.Sleep(2000);
-                await MigrateDatabase<TContext>(host, retryForAvailability);
+                await MigrateDatabase(host, retryForAvailability);
             }
         }
     }
